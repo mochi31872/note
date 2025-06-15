@@ -1,67 +1,126 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>메모장</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>메모장 리스트</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f8f9fa;
       margin: 20px;
-      background: #f9f9f9;
     }
     h1 {
       text-align: center;
     }
-    textarea {
+    textarea, input {
       width: 100%;
-      height: 300px;
       padding: 10px;
+      margin-bottom: 10px;
       font-size: 1rem;
-      resize: vertical;
-    }
-    .controls {
-      margin-top: 10px;
-      display: flex;
-      justify-content: space-between;
     }
     button {
       padding: 10px;
-      font-size: 1rem;
+      margin-right: 5px;
       cursor: pointer;
+    }
+    .memo-list {
+      margin-top: 20px;
+    }
+    .memo-item {
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .memo-item h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .memo-item p {
+      margin: 5px 0 0;
+      white-space: pre-wrap;
+    }
+    .controls {
+      display: flex;
+      justify-content: flex-end;
     }
   </style>
 </head>
 <body>
   <h1>📝 메모장</h1>
-  <textarea id="memoArea" placeholder="여기에 메모를 작성하세요..."></textarea>
+
+  <input type="text" id="titleInput" placeholder="제목 입력" />
+  <textarea id="memoInput" placeholder="메모 입력..."></textarea>
   <div class="controls">
     <button onclick="saveMemo()">저장</button>
-    <button onclick="clearMemo()">삭제</button>
   </div>
 
+  <div class="memo-list" id="memoList"></div>
+
   <script>
-    const memoArea = document.getElementById("memoArea");
+    const titleInput = document.getElementById("titleInput");
+    const memoInput = document.getElementById("memoInput");
+    const memoList = document.getElementById("memoList");
 
-    // 페이지 로드 시 저장된 메모 불러오기
-    window.onload = () => {
-      const savedMemo = localStorage.getItem("mymemo");
-      if (savedMemo) memoArea.value = savedMemo;
-    };
+    // 메모 불러오기
+    function loadMemos() {
+      memoList.innerHTML = "";
+      const memos = JSON.parse(localStorage.getItem("memoList")) || [];
+      memos.forEach((memo, index) => {
+        const item = document.createElement("div");
+        item.className = "memo-item";
 
-    // 저장
+        const title = document.createElement("h3");
+        title.textContent = memo.title;
+        title.onclick = () => {
+          alert(`제목: ${memo.title}\n\n내용:\n${memo.content}`);
+        };
+
+        const contentPreview = document.createElement("p");
+        contentPreview.textContent = memo.content.length > 100
+          ? memo.content.slice(0, 100) + "..."
+          : memo.content;
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "삭제";
+        delBtn.onclick = () => {
+          if (confirm("이 메모를 삭제할까요?")) {
+            memos.splice(index, 1);
+            localStorage.setItem("memoList", JSON.stringify(memos));
+            loadMemos();
+          }
+        };
+
+        item.appendChild(title);
+        item.appendChild(contentPreview);
+        item.appendChild(delBtn);
+        memoList.appendChild(item);
+      });
+    }
+
+    // 메모 저장
     function saveMemo() {
-      localStorage.setItem("mymemo", memoArea.value);
-      alert("메모가 저장되었습니다!");
+      const title = titleInput.value.trim();
+      const content = memoInput.value.trim();
+      if (!title || !content) {
+        alert("제목과 내용을 모두 입력하세요.");
+        return;
+      }
+
+      const memos = JSON.parse(localStorage.getItem("memoList")) || [];
+      memos.unshift({ title, content });
+      localStorage.setItem("memoList", JSON.stringify(memos));
+
+      titleInput.value = "";
+      memoInput.value = "";
+      loadMemos();
     }
 
-    // 삭제
-    function clearMemo() {
-      if (confirm("메모를 삭제하시겠습니까?")) {
-        memoArea.value = "";
-        localStorage.removeItem("mymemo");
-      }
-    }
+    // 초기 로딩 시 실행
+    loadMemos();
   </script>
 </body>
 </html>
