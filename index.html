@@ -3,26 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>메모장 리스트</title>
+  <title>메모장</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f8f9fa;
+      background: #f5f5f5;
       margin: 20px;
     }
     h1 {
       text-align: center;
     }
-    textarea, input {
+    input, textarea {
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
       font-size: 1rem;
+      box-sizing: border-box;
     }
     button {
-      padding: 10px;
-      margin-right: 5px;
+      padding: 10px 15px;
+      font-size: 1rem;
       cursor: pointer;
+      margin-bottom: 20px;
     }
     .memo-list {
       margin-top: 20px;
@@ -30,22 +32,26 @@
     .memo-item {
       background: #fff;
       padding: 10px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
-    .memo-item h3 {
-      margin: 0;
+    .memo-title {
+      font-weight: bold;
       font-size: 1.1rem;
       cursor: pointer;
     }
-    .memo-item p {
-      margin: 5px 0 0;
+    .memo-content {
+      margin-top: 10px;
+      display: none;
       white-space: pre-wrap;
     }
     .controls {
       display: flex;
       justify-content: flex-end;
+    }
+    .search-bar {
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -53,10 +59,12 @@
   <h1>📝 메모장</h1>
 
   <input type="text" id="titleInput" placeholder="제목 입력" />
-  <textarea id="memoInput" placeholder="메모 입력..."></textarea>
+  <textarea id="memoInput" placeholder="메모 내용 입력..."></textarea>
   <div class="controls">
     <button onclick="saveMemo()">저장</button>
   </div>
+
+  <input type="text" id="searchInput" class="search-bar" placeholder="제목 검색..." oninput="filterMemos()" />
 
   <div class="memo-list" id="memoList"></div>
 
@@ -64,30 +72,31 @@
     const titleInput = document.getElementById("titleInput");
     const memoInput = document.getElementById("memoInput");
     const memoList = document.getElementById("memoList");
+    const searchInput = document.getElementById("searchInput");
 
-    // 메모 불러오기
     function loadMemos() {
       memoList.innerHTML = "";
       const memos = JSON.parse(localStorage.getItem("memoList")) || [];
+
       memos.forEach((memo, index) => {
         const item = document.createElement("div");
         item.className = "memo-item";
 
-        const title = document.createElement("h3");
+        const title = document.createElement("div");
+        title.className = "memo-title";
         title.textContent = memo.title;
         title.onclick = () => {
-          alert(`제목: ${memo.title}\n\n내용:\n${memo.content}`);
+          content.style.display = content.style.display === "none" ? "block" : "none";
         };
 
-        const contentPreview = document.createElement("p");
-        contentPreview.textContent = memo.content.length > 100
-          ? memo.content.slice(0, 100) + "..."
-          : memo.content;
+        const content = document.createElement("div");
+        content.className = "memo-content";
+        content.textContent = memo.content;
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "삭제";
         delBtn.onclick = () => {
-          if (confirm("이 메모를 삭제할까요?")) {
+          if (confirm("이 메모를 삭제하시겠습니까?")) {
             memos.splice(index, 1);
             localStorage.setItem("memoList", JSON.stringify(memos));
             loadMemos();
@@ -95,16 +104,16 @@
         };
 
         item.appendChild(title);
-        item.appendChild(contentPreview);
+        item.appendChild(content);
         item.appendChild(delBtn);
         memoList.appendChild(item);
       });
     }
 
-    // 메모 저장
     function saveMemo() {
       const title = titleInput.value.trim();
       const content = memoInput.value.trim();
+
       if (!title || !content) {
         alert("제목과 내용을 모두 입력하세요.");
         return;
@@ -119,8 +128,17 @@
       loadMemos();
     }
 
-    // 초기 로딩 시 실행
-    loadMemos();
+    function filterMemos() {
+      const keyword = searchInput.value.toLowerCase();
+      const items = document.querySelectorAll(".memo-item");
+
+      items.forEach(item => {
+        const title = item.querySelector(".memo-title").textContent.toLowerCase();
+        item.style.display = title.includes(keyword) ? "block" : "none";
+      });
+    }
+
+    window.onload = loadMemos;
   </script>
 </body>
 </html>
