@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>메모장</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      padding: 10px;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      padding: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>📝 메모장</h1>
+  <textarea id="memoArea" placeholder="여기에 메모를 작성하세요..."></textarea>
+  <div class="controls">
+    <button onclick="saveMemo()">저장</button>
+    <button onclick="clearMemo()">삭제</button>
+  </div>
+
+  <script>
+    const memoArea = document.getElementById("memoArea");
+
+    // 페이지 로드 시 저장된 메모 불러오기
+    window.onload = () => {
+      const savedMemo = localStorage.getItem("mymemo");
+      if (savedMemo) memoArea.value = savedMemo;
+    };
+
+    // 저장
+    function saveMemo() {
+      localStorage.setItem("mymemo", memoArea.value);
+      alert("메모가 저장되었습니다!");
+    }
+
+    // 삭제
+    function clearMemo() {
+      if (confirm("메모를 삭제하시겠습니까?")) {
+        memoArea.value = "";
+        localStorage.removeItem("mymemo");
+      }
+    }
+  </script>
+</body>
+</html>
