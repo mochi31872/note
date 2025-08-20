@@ -1,195 +1,104 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>메모장</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>간단 메모장</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
       margin: 20px;
+      max-width: 600px;
     }
-    h1 {
-      text-align: center;
-    }
-    input, textarea {
+    textarea {
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
       font-size: 1rem;
       box-sizing: border-box;
-    }
-    textarea {
       min-height: 100px;
       resize: none;
-      overflow-y: hidden;
     }
     button {
       padding: 10px 15px;
       font-size: 1rem;
+      margin-right: 5px;
       cursor: pointer;
-      margin: 2px;
     }
-    .memo-list {
-      margin-top: 20px;
+    ul {
+      list-style-type: none;
+      padding: 0;
     }
-    .memo-item {
-      background: #fff;
+    li {
+      background: #f0f0f0;
+      margin: 5px 0;
       padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .memo-title {
-      font-weight: bold;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-    .memo-content {
-      margin-top: 10px;
-      display: none;
-      white-space: pre-wrap;
-    }
-    .controls {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    .search-bar {
-      margin-top: 20px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>📝 메모장</h1>
-
-  <input type="text" id="titleInput" placeholder="제목 입력" />
+  <h2>간단 메모장</h2>
   <textarea id="memoInput" placeholder="메모 내용 입력..." oninput="autoResize(this)"></textarea>
-  <div class="controls">
-    <button onclick="saveMemo()">저장</button>
-    <button onclick="exportMemos()">파일로 저장</button>
-  </div>
-
-  <input type="text" id="searchInput" class="search-bar" placeholder="제목 검색..." oninput="filterMemos()" />
-
-  <div class="memo-list" id="memoList"></div>
+  <br>
+  <button onclick="saveMemo()">저장</button>
+  <button onclick="downloadMemos()">파일로 저장</button>
+  <ul id="memoList"></ul>
 
   <script>
-    const titleInput = document.getElementById("titleInput");
-    const memoInput = document.getElementById("memoInput");
-    const memoList = document.getElementById("memoList");
-    const searchInput = document.getElementById("searchInput");
-
-    let editIndex = null;
-
+    // 자동 높이 조절
     function autoResize(textarea) {
       textarea.style.height = "auto";
       textarea.style.height = textarea.scrollHeight + "px";
     }
 
-    function loadMemos() {
-      memoList.innerHTML = "";
-      const memos = JSON.parse(localStorage.getItem("memoList")) || [];
-
-      memos.forEach((memo, index) => {
-        const item = document.createElement("div");
-        item.className = "memo-item";
-
-        const title = document.createElement("div");
-        title.className = "memo-title";
-        title.textContent = memo.title;
-        title.onclick = () => {
-          content.style.display = content.style.display === "none" ? "block" : "none";
-        };
-
-        const content = document.createElement("div");
-        content.className = "memo-content";
-        content.textContent = memo.content;
-
-        const btnBox = document.createElement("div");
-        btnBox.style.marginTop = "10px";
-
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "수정";
-        editBtn.onclick = () => {
-          titleInput.value = memo.title;
-          memoInput.value = memo.content;
-          autoResize(memoInput);
-          editIndex = index;
-        };
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "삭제";
-        delBtn.onclick = () => {
-          if (confirm("이 메모를 삭제하시겠습니까?")) {
-            memos.splice(index, 1);
-            localStorage.setItem("memoList", JSON.stringify(memos));
-            loadMemos();
-          }
-        };
-
-        btnBox.appendChild(editBtn);
-        btnBox.appendChild(delBtn);
-
-        item.appendChild(title);
-        item.appendChild(content);
-        item.appendChild(btnBox);
-        memoList.appendChild(item);
+    // 저장된 메모 불러오기
+    window.onload = function() {
+      let memos = JSON.parse(localStorage.getItem("memos")) || [];
+      let memoList = document.getElementById("memoList");
+      memos.forEach(memo => {
+        let li = document.createElement("li");
+        li.textContent = memo;
+        memoList.appendChild(li);
       });
-    }
+    };
 
+    // 메모 저장
     function saveMemo() {
-      const title = titleInput.value.trim();
-      const content = memoInput.value.trim();
+      let input = document.getElementById("memoInput");
+      let memo = input.value.trim();
+      if (memo === "") return;
 
-      if (!title || !content) {
-        alert("제목과 내용을 모두 입력하세요.");
-        return;
-      }
+      // localStorage에 저장
+      let memos = JSON.parse(localStorage.getItem("memos")) || [];
+      memos.push(memo);
+      localStorage.setItem("memos", JSON.stringify(memos));
 
-      const memos = JSON.parse(localStorage.getItem("memoList")) || [];
+      // 화면에 표시
+      let memoList = document.getElementById("memoList");
+      let li = document.createElement("li");
+      li.textContent = memo;
+      memoList.appendChild(li);
 
-      if (editIndex !== null) {
-        memos[editIndex] = { title, content };
-        editIndex = null;
-      } else {
-        memos.unshift({ title, content });
-      }
-
-      localStorage.setItem("memoList", JSON.stringify(memos));
-
-      titleInput.value = "";
-      memoInput.value = "";
-      memoInput.style.height = "auto";
-      loadMemos();
+      input.value = "";
+      input.style.height = "100px";
     }
 
-    function filterMemos() {
-      const keyword = searchInput.value.toLowerCase();
-      const items = document.querySelectorAll(".memo-item");
-
-      items.forEach(item => {
-        const title = item.querySelector(".memo-title").textContent.toLowerCase();
-        item.style.display = title.includes(keyword) ? "block" : "none";
-      });
-    }
-
-    // 📌 파일로 저장하기 (JSON 형식)
-    function exportMemos() {
-      const memos = JSON.parse(localStorage.getItem("memoList")) || [];
+    // 전체 메모를 txt 파일로 저장
+    function downloadMemos() {
+      let memos = JSON.parse(localStorage.getItem("memos")) || [];
       if (memos.length === 0) {
-        alert("저장할 메모가 없습니다.");
+        alert("저장된 메모가 없습니다.");
         return;
       }
-      const blob = new Blob([JSON.stringify(memos, null, 2)], { type: "application/json" });
-      const link = document.createElement("a");
+
+      let content = memos.join("\n--------------------\n"); // 메모 구분선 넣기
+      let blob = new Blob([content], { type: "text/plain" });
+      let link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "memos.json"; // 저장 파일 이름
+      link.download = "memos.txt";
       link.click();
     }
-
-    window.onload = loadMemos;
   </script>
 </body>
 </html>
