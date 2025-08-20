@@ -59,6 +59,11 @@
     .search-bar {
       margin-top: 20px;
     }
+    .memo-content a {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -105,7 +110,17 @@
 
         const content = document.createElement("div");
         content.className = "memo-content";
-        content.textContent = memo.content;
+
+        const urlPattern = /^(https?:\/\/[^\s]+)$/;
+        if (urlPattern.test(memo.content)) {
+          const link = document.createElement("a");
+          link.href = memo.content;
+          link.target = "_blank";
+          link.textContent = memo.content;
+          content.appendChild(link);
+        } else {
+          content.textContent = memo.content;
+        }
 
         const btnBox = document.createElement("div");
         btnBox.style.marginTop = "10px";
@@ -175,7 +190,6 @@
       });
     }
 
-    // 📌 파일로 저장하기 (JSON 형식)
     function exportMemos() {
       const memos = JSON.parse(localStorage.getItem("memoList")) || [];
       if (memos.length === 0) {
@@ -185,7 +199,7 @@
       const blob = new Blob([JSON.stringify(memos, null, 2)], { type: "application/json" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "memos.json"; // 저장 파일 이름
+      link.download = "memos.json";
       link.click();
     }
 
