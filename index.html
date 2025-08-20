@@ -20,6 +20,11 @@
       font-size: 1rem;
       box-sizing: border-box;
     }
+    textarea {
+      min-height: 100px;
+      resize: none;
+      overflow-y: hidden;
+    }
     button {
       padding: 10px 15px;
       font-size: 1rem;
@@ -59,7 +64,7 @@
   <h1>📝 메모장</h1>
 
   <input type="text" id="titleInput" placeholder="제목 입력" />
-  <textarea id="memoInput" placeholder="메모 내용 입력..."></textarea>
+  <textarea id="memoInput" placeholder="메모 내용 입력..." oninput="autoResize(this)"></textarea>
   <div class="controls">
     <button onclick="saveMemo()">저장</button>
   </div>
@@ -74,7 +79,12 @@
     const memoList = document.getElementById("memoList");
     const searchInput = document.getElementById("searchInput");
 
-    let editIndex = null; // 수정 중인 메모 인덱스 저장
+    let editIndex = null;
+
+    function autoResize(textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
+    }
 
     function loadMemos() {
       memoList.innerHTML = "";
@@ -103,7 +113,8 @@
         editBtn.onclick = () => {
           titleInput.value = memo.title;
           memoInput.value = memo.content;
-          editIndex = index; // 수정할 메모 인덱스 저장
+          autoResize(memoInput);
+          editIndex = index;
         };
 
         const delBtn = document.createElement("button");
@@ -138,11 +149,9 @@
       const memos = JSON.parse(localStorage.getItem("memoList")) || [];
 
       if (editIndex !== null) {
-        // 수정 모드일 때
         memos[editIndex] = { title, content };
-        editIndex = null; // 수정 종료
+        editIndex = null;
       } else {
-        // 새 메모 추가
         memos.unshift({ title, content });
       }
 
@@ -150,6 +159,7 @@
 
       titleInput.value = "";
       memoInput.value = "";
+      memoInput.style.height = "auto";
       loadMemos();
     }
 
