@@ -54,6 +54,7 @@
     .controls {
       display: flex;
       justify-content: flex-end;
+      gap: 10px;
     }
     .search-bar {
       margin-top: 20px;
@@ -67,6 +68,7 @@
   <textarea id="memoInput" placeholder="메모 내용 입력..." oninput="autoResize(this)"></textarea>
   <div class="controls">
     <button onclick="saveMemo()">저장</button>
+    <button onclick="exportMemos()">파일로 저장</button>
   </div>
 
   <input type="text" id="searchInput" class="search-bar" placeholder="제목 검색..." oninput="filterMemos()" />
@@ -171,6 +173,20 @@
         const title = item.querySelector(".memo-title").textContent.toLowerCase();
         item.style.display = title.includes(keyword) ? "block" : "none";
       });
+    }
+
+    // 📌 파일로 저장하기 (JSON 형식)
+    function exportMemos() {
+      const memos = JSON.parse(localStorage.getItem("memoList")) || [];
+      if (memos.length === 0) {
+        alert("저장할 메모가 없습니다.");
+        return;
+      }
+      const blob = new Blob([JSON.stringify(memos, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "memos.json"; // 저장 파일 이름
+      link.click();
     }
 
     window.onload = loadMemos;
