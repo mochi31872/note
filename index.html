@@ -24,7 +24,7 @@
       padding: 10px 15px;
       font-size: 1rem;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin: 2px;
     }
     .memo-list {
       margin-top: 20px;
@@ -74,6 +74,8 @@
     const memoList = document.getElementById("memoList");
     const searchInput = document.getElementById("searchInput");
 
+    let editIndex = null; // 수정 중인 메모 인덱스 저장
+
     function loadMemos() {
       memoList.innerHTML = "";
       const memos = JSON.parse(localStorage.getItem("memoList")) || [];
@@ -93,6 +95,17 @@
         content.className = "memo-content";
         content.textContent = memo.content;
 
+        const btnBox = document.createElement("div");
+        btnBox.style.marginTop = "10px";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "수정";
+        editBtn.onclick = () => {
+          titleInput.value = memo.title;
+          memoInput.value = memo.content;
+          editIndex = index; // 수정할 메모 인덱스 저장
+        };
+
         const delBtn = document.createElement("button");
         delBtn.textContent = "삭제";
         delBtn.onclick = () => {
@@ -103,9 +116,12 @@
           }
         };
 
+        btnBox.appendChild(editBtn);
+        btnBox.appendChild(delBtn);
+
         item.appendChild(title);
         item.appendChild(content);
-        item.appendChild(delBtn);
+        item.appendChild(btnBox);
         memoList.appendChild(item);
       });
     }
@@ -120,7 +136,16 @@
       }
 
       const memos = JSON.parse(localStorage.getItem("memoList")) || [];
-      memos.unshift({ title, content });
+
+      if (editIndex !== null) {
+        // 수정 모드일 때
+        memos[editIndex] = { title, content };
+        editIndex = null; // 수정 종료
+      } else {
+        // 새 메모 추가
+        memos.unshift({ title, content });
+      }
+
       localStorage.setItem("memoList", JSON.stringify(memos));
 
       titleInput.value = "";
