@@ -53,6 +53,7 @@
     }
     .controls {
       display: flex;
+      flex-wrap: wrap;
       justify-content: flex-end;
       gap: 10px;
     }
@@ -74,6 +75,8 @@
   <div class="controls">
     <button onclick="saveMemo()">저장</button>
     <button onclick="exportMemos()">파일로 저장</button>
+    <button onclick="document.getElementById('importFile').click()">파일 불러오기</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importMemos(event)" />
   </div>
 
   <input type="text" id="searchInput" class="search-bar" placeholder="제목 검색..." oninput="filterMemos()" />
@@ -201,6 +204,28 @@
       link.href = URL.createObjectURL(blob);
       link.download = "memos.json";
       link.click();
+    }
+
+    function importMemos(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!Array.isArray(imported)) {
+            alert("올바른 메모 파일이 아닙니다.");
+            return;
+          }
+          localStorage.setItem("memoList", JSON.stringify(imported));
+          loadMemos();
+          alert("메모를 불러왔습니다.");
+        } catch (err) {
+          alert("파일을 불러오는 중 오류가 발생했습니다.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     window.onload = loadMemos;
